@@ -1,0 +1,13 @@
+User -> state = ('NEW', 'VERIFIED', 'DISABLED')
+
+Course -> state = ('ACTIVE', 'INACTIVE')
+
+Community -> type = ('ANY', 'INVITATION')
+
+Community -> state = ('ACTIVE', 'INACTIVE')
+
+Enrollment -> state = ('INVITED', 'REQUESTED', 'ENROLLED', 'REJECTED', 'BLOCKED', 'LEFT')
+
+Activity -> type = ('POST', 'COMMENT', 'EXPRESSION')
+
+Notification -> state = ('NEW', 'SEEN', 'CLICKED')
