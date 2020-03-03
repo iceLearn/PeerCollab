@@ -1,0 +1,17 @@
+{
+  "name": "peer-collab",
+  "version": "1.0.0",
+  "description": "PeerCollab is a system that enable to form small communities in order to bring social learning and peer interactions to the Massive Open Online Courses.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "education",
+    "mooc",
+    "social",
+    "learning"
+  ],
+  "author": "Mahen Samaranayake",
+  "license": "ISC"
+}
