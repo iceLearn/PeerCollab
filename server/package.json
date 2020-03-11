@@ -4,14 +4,32 @@
   "description": "PeerCollab is a system that enable to form small communities in order to bring social learning and peer interactions to the Massive Open Online Courses.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon index.js"
   },
   "keywords": [
     "education",
     "mooc",
-    "social",
+    "social", 
     "learning"
   ],
   "author": "Mahen Samaranayake",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "2.4.3",
+    "body-parser": "1.17.2",
+    "connect-history-api-fallback": "1.6.0",
+    "cors": "2.8.4",
+    "dotenv": "^8.2.0",
+    "express": "4.16.3",
+    "jsonwebtoken": "7.4.2",
+    "log4js": "4.1.0",
+    "multer": "1.4.1",
+    "mysql": "2.14.1",
+    "mysql2": "1.6.1",
+    "sequelize": "5.8.7"
+  },
+  "devDependencies": {
+    "standard": "12.0.1",
+    "nodemon": "1.18.3"
+  }
 }
