@@ -9,13 +9,14 @@ const ErrorType = {
   FOREIGN_KEY: 'ForeignKeyConstraintError',
   UNIQUE_NAME: 'name_UNIQUE',
   UNIQUE_CODE: 'code_UNIQUE',
+  UNIQUE_BARCODE: 'barcode_UNIQUE',
   UNIQUE_TELEPHONE: 'telephone_UNIQUE',
   UNIQUE_EMAIL: 'email_UNIQUE',
   UNIQUE_USERNAME: 'username_UNIQUE',
   MINUS: 'DATA_OUT_OF_RANGE'
 }
 
-function checkError(err, str) {
+function checkError (err, str) {
   return JSON.stringify(err).indexOf((str)) > -1
 }
 
