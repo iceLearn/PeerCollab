@@ -5,12 +5,15 @@ import jwtDecode from 'jwt-decode'
 import Landing from './Landing'
 import Nav from './Nav'
 import Sidebar from './Sidebar'
-import Profile from './pages/Profile'
-import Courses from './pages/Courses'
 import Login from './auth/Login'
 import Register from './auth/Register'
 import Notifier, { openSnackbar } from './small-components/Notifier'
 import axios from './../ctrl/AxiosConf'
+import Profile from './pages/Profile'
+import Courses from './pages/Courses'
+import CourseManager from './pages/CourseManager'
+import CommunityManager from './pages/CommunityManager'
+import MyCommunities from './pages/MyCommunities'
 
 class MainWindow extends React.Component {
 
@@ -49,7 +52,10 @@ class MainWindow extends React.Component {
             <div class="main-panel">
               <Route exact path='/' component={Landing} />
               <Route exact path='/profile' component={Profile} />
-              <Route exact path='/courses' component={Courses} />
+              <Route exact path='/course-manager' component={CourseManager} />
+              <Route exact path='/community-manager' component={CommunityManager} />
+              <Route exact path='/community-browser' component={Courses} />
+              <Route exact path='/my-communities' component={MyCommunities} />
               {/* <Route exact path='/' component={Landing} />
               <Route exact path='/' component={Landing} />
               <Route exact path='/' component={Landing} />

@@ -9,7 +9,7 @@ const { log, LogType } = require('../ctrl/user-logger')
 const Message = require('../ctrl/alert-messages')
 router.use(cors())
 const UI = 'COURSE'
-
+ 
 Course.hasOne(User, { foreignKey: 'id', sourceKey: 'user_id' })
 
 router.get('/', middleware.checkToken, (req, res) => {
@@ -21,6 +21,24 @@ router.get('/', middleware.checkToken, (req, res) => {
         model: User
       }
     ]
+  }).then(results => {
+    const data = results.map((node) => node.get({ plain: true }))
+    res.json(data)
+    log(req, LogType.SELECT_ALL, null, UI, null, '')
+  }).catch(err => {
+    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
+    logger.error(err)
+    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
+  })
+})
+
+router.get('/by-user', middleware.checkToken, (req, res) => {
+  Course.findAll({
+    attributes: ['id', 'name', 'description', 'icon', 'max_communities', 'max_students',
+      'state', 'created_at'],
+    where: {
+      user_id: req.decoded.id
+    }
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
     res.json(data)
@@ -46,24 +64,6 @@ router.get('/:id', middleware.checkToken, (req, res) => {
       }
     ]
   }).then(data => {
-    res.json(data)
-    log(req, LogType.SELECT_ALL, null, UI, null, '')
-  }).catch(err => {
-    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
-    logger.error(err)
-    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
-  })
-})
-
-router.get('/by-user/:id', middleware.checkToken, (req, res) => {
-  Course.findAll({
-    attributes: ['id', 'name', 'description', 'icon', 'max_communities', 'max_students',
-      'state', 'created_at'],
-    where: {
-      user_id: req.params.id
-    }
-  }).then(results => {
-    const data = results.map((node) => node.get({ plain: true }))
     res.json(data)
     log(req, LogType.SELECT_ALL, null, UI, null, '')
   }).catch(err => {

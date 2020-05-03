@@ -425,7 +425,7 @@ class Profile extends Component {
         </div>
         <div class="col-md-6 grid-margin stretch-card">
           <div class="card">
-            <div class="card-body">
+            <div class="card-body"> 
               <h4 class="card-title">&nbsp;</h4>
               <p class="card-description">
                 Profile Image

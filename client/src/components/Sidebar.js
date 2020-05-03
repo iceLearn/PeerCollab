@@ -25,7 +25,10 @@ class Nav extends Component {
           </a>
           <div class="collapse" id="auth">
             <ul class="nav flex-column sub-menu">
-              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/courses')}> Courses </a></li>
+              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/course-manager')}> Course Manager </a></li>
+              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/community-manager')}> Community Manager </a></li>
+              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/community-browser')}> Browse Communities </a></li>
+              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/my-communities')}> My Communities </a></li>
             </ul>
           </div>
         </li>

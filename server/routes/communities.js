@@ -3,6 +3,7 @@ const router = express.Router()
 const cors = require('cors')
 const User = require('../models/user')
 const Community = require('../models/community')
+const Course = require('../models/course')
 const middleware = require('../middleware/auth-middleware')
 const { checkError, logger, ErrorType } = require('../util/error-utils')
 const { log, LogType } = require('../ctrl/user-logger')
@@ -11,6 +12,7 @@ router.use(cors())
 const UI = 'COMMUNITY'
 
 Community.hasOne(User, { foreignKey: 'id', sourceKey: 'user_id' })
+Community.hasOne(Course, { foreignKey: 'id', sourceKey: 'course_id' })
 
 router.get('/by-course/:id', middleware.checkToken, (req, res) => {
   Community.findAll({
@@ -33,10 +35,16 @@ router.get('/by-course/:id', middleware.checkToken, (req, res) => {
   })
 })
 
-router.get('/by-user/:id', middleware.checkToken, (req, res) => {
+router.get('/by-user', middleware.checkToken, (req, res) => {
   Community.findAll({
-    attributes: ['id', 'name', 'description', 'type', 'state', 'created_at'],
-    where: { 'user_id': req.params.id }
+    attributes: ['id', 'name', 'description', 'type', 'state', 'created_at', 'course_id'],
+    where: { 'user_id': req.decoded.id },
+    include: [
+      {
+        attributes: ['id', 'name'],
+        model: Course
+      }
+    ]
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
     res.json(data)
@@ -50,12 +58,16 @@ router.get('/by-user/:id', middleware.checkToken, (req, res) => {
 
 router.get('/:id', middleware.checkToken, (req, res) => {
   Community.findOne({
-    attributes: ['id', 'name', 'description', 'type', 'state', 'created_at'],
+    attributes: ['id', 'name', 'description', 'type', 'state', 'created_at', 'course_id'],
     where: { 'id': req.params.id },
     include: [
       {
         attributes: ['id', 'username', 'name'],
         model: User
+      },
+      {
+        attributes: ['id', 'name'],
+        model: Course
       }
     ]
   }).then(data => {
@@ -69,6 +81,7 @@ router.get('/:id', middleware.checkToken, (req, res) => {
 })
 
 router.post('/', middleware.checkToken, (req, res) => {
+  console.log(req.body)
   req.body.user_id = req.decoded.id
   Community.create(req.body).then(results => {
     res.json({ status: true, id: results.id })
@@ -93,6 +106,7 @@ router.put('/', middleware.checkToken, (req, res) => {
     res.json({ status: true })
     log(req, LogType.UPDATE, req.body.id, UI, null, '')
   }).catch(err => {
+    console.log(err)
     if (checkError(err, ErrorType.UNIQUE_NAME)) {
       res.json({ status: false, message: Message.MSG_NAME_EXISTS })
       log(req, LogType.UPDATE_ATTEMPT, req.body.id, UI, null, 'name: ' + req.body.name)

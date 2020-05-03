@@ -64,6 +64,33 @@ router.get('/by-user/:id', middleware.checkToken, (req, res) => {
   })
 })
 
+router.get('/my-communities', middleware.checkToken, (req, res) => {
+  Enrollment.findAll({
+    attributes: ['id', 'level', 'time', 'state'],
+    where: { 'user_id': req.decoded.id },
+    include: [
+      {
+        attributes: ['id', 'name'],
+        model: Community,
+        include: [
+          {
+            attributes: ['id', 'name', 'icon'],
+            model: Course
+          }
+        ]
+      }
+    ]
+  }).then(results => {
+    const data = results.map((node) => node.get({ plain: true }))
+    res.json(data)
+    log(req, LogType.SELECT_ALL, null, UI, null, '')
+  }).catch(err => {
+    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
+    logger.error(err)
+    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
+  })
+})
+
 router.post('/', middleware.checkToken, (req, res) => {
   req.body.user_id = req.decoded.id
   Enrollment.create(req.body).then(results => {

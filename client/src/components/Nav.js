@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
+import { userInfo } from '../info'
 import axios from './../ctrl/AxiosConf'
 
 class Nav extends Component {
@@ -8,7 +9,7 @@ class Nav extends Component {
     e.preventDefault()
     this.props.history.push(url)
   }
-  
+
   clickLogout = (e) => {
     e.preventDefault()
     this.setState({ anchorEl: null })
@@ -134,7 +135,7 @@ class Nav extends Component {
         </li>
         <li class="nav-item nav-profile dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
-            <img src="images/faces/face28.jpg" alt="profile" />
+            <img src={'images/user_icons/' + (userInfo['icon'] != null ? userInfo['icon'] : 0) + '.jpg'} alt="profile" />
           </a>
           <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="profileDropdown">
             <a class="dropdown-item" href='#' onClick={this.clickLink.bind(this, '/')}>
