@@ -5,14 +5,15 @@ const cors = require('cors')
 const User = require('../models/user')
 const middleware = require('../middleware/auth-middleware')
 const { checkError, logger, ErrorType } = require('../util/error-utils')
+const { log, LogType } = require('../ctrl/user-logger')
 const Message = require('../ctrl/alert-messages')
 router.use(cors())
-const UI = 'USER'
+const UI = 'USER_MASTER'
 const Op = Sequelize.Op
 
 router.get('/', middleware.checkToken, (req, res) => {
   User.findAll({
-    attributes: ['id', 'name', 'email', 'username', 'icon', 'country', 'timezone', 'bio', 'level', 'state', 'created_at'],
+    attributes: ['id', 'name', 'email', 'username', 'state', 'created_at'],
     order: [
       ['state', 'ASC'],
       ['name', 'ASC']
@@ -30,7 +31,7 @@ router.get('/', middleware.checkToken, (req, res) => {
 
 router.get('/:query', middleware.checkToken, (req, res) => {
   User.findAll({
-    attributes: ['id', 'name', 'email', 'username', 'icon', 'country', 'timezone', 'bio', 'level', 'state', 'created_at'],
+    attributes: ['id', 'name', 'username', 'email', 'state', 'created_at'],
     where: {
       [Op.or]: [
         {
