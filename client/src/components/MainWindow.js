@@ -14,6 +14,7 @@ import Courses from './pages/Courses'
 import CourseManager from './pages/CourseManager'
 import CommunityManager from './pages/CommunityManager'
 import MyCommunities from './pages/MyCommunities'
+import Community from './pages/Community'
 
 class MainWindow extends React.Component {
 
@@ -56,6 +57,7 @@ class MainWindow extends React.Component {
               <Route exact path='/community-manager' component={CommunityManager} />
               <Route exact path='/community-browser' component={Courses} />
               <Route exact path='/my-communities' component={MyCommunities} />
+              <Route exact path='/community/:id' component={Community} />
               {/* <Route exact path='/' component={Landing} />
               <Route exact path='/' component={Landing} />
               <Route exact path='/' component={Landing} />

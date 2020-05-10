@@ -71,9 +71,11 @@ router.get('/:id', middleware.checkToken, (req, res) => {
       }
     ]
   }).then(data => {
+    console.log(data)
     res.json(data)
     log(req, LogType.SELECT_ALL, null, UI, null, '')
   }).catch(err => {
+    console.log(err)
     res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
     logger.error(err)
     log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')

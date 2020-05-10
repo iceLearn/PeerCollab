@@ -22,7 +22,7 @@ router.get('/by-community/:id', middleware.checkToken, (req, res) => {
     where: { 'community_id': req.params.id },
     include: [
       {
-        attributes: ['id', 'username', 'name'],
+        attributes: ['id', 'username', 'name', 'icon'],
         model: User
       }
     ]
@@ -85,6 +85,25 @@ router.get('/my-communities', middleware.checkToken, (req, res) => {
     res.json(data)
     log(req, LogType.SELECT_ALL, null, UI, null, '')
   }).catch(err => {
+    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
+    logger.error(err)
+    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
+  })
+})
+
+router.get('/enrollment/:id', middleware.checkToken, (req, res) => {
+  Enrollment.findAll({
+    attributes: ['id', 'level', 'time', 'state'],
+    where: {
+      'user_id': req.decoded.id,
+      'community_id': req.params.id
+    }
+  }).then(results => {
+    const data = results.map((node) => node.get({ plain: true }))
+    res.json(data)
+    log(req, LogType.SELECT_ALL, null, UI, null, '')
+  }).catch(err => {
+    console.log(err)
     res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
     logger.error(err)
     log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')

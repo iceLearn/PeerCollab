@@ -14,22 +14,40 @@ const UI = 'ACTIVITY'
 
 Activity.hasOne(Community, { foreignKey: 'id', sourceKey: 'community_id' })
 Activity.hasOne(User, { foreignKey: 'id', sourceKey: 'user_id' })
-Activity.hasMany(Activity, { as: 'sub_activities', foreignKey: 'activity_ref_id', sourceKey: 'id' })
+Activity.hasOne(User, { as: 'sub_user', foreignKey: 'id', sourceKey: 'user_id' })
+Activity.hasMany(Activity, { as: 'sub_activities', foreignKey: 'id', sourceKey: 'activity_ref_id' })
 
 router.get('/by-community/:id/:offset', middleware.checkToken, (req, res) => {
   Activity.findAll({
     attributes: ['id', 'type', 'text', 'attachment', 'expression', 'created_at', 'updated_at',
-      'activity_ref_id'],
-    where: { 'community_id': req.params.id },
+      'activity_ref_id', 'user_id'],
+    where: {
+      'community_id': req.params.id,
+      'type': 'POST'
+    },
     order: [
-      ['updated_at', 'DESC']
+      ['created_at', 'DESC']
     ],
-    offset: req.params.offset,
+    offset: parseInt(req.params.offset),
     limit: 10,
     include: [
       {
-        attributes: ['id', 'username', 'name'],
+        attributes: ['id', 'username', 'name', 'icon'],
         model: User
+      },
+      {
+        model: Activity,
+        as: 'sub_activities',
+        on: {
+          item_id: db.sequelize.where(db.sequelize.col('activity.id'), '=', db.sequelize.col('sub_activities.activity_ref_id'))
+        },
+        required: false,
+        attributes: ['id', 'type', 'text', 'attachment', 'expression', 'created_at'],
+        include: [{
+          as: 'sub_user',
+          attributes: ['id', 'username', 'name', 'icon'],
+          model: User
+        }]
       }
     ]
   }).then(results => {
@@ -37,6 +55,7 @@ router.get('/by-community/:id/:offset', middleware.checkToken, (req, res) => {
     res.json(data)
     log(req, LogType.SELECT_ALL, null, UI, null, '')
   }).catch(err => {
+    console.log(err)
     res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
     logger.error(err)
     log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
@@ -86,7 +105,7 @@ router.get('/:id', middleware.checkToken, (req, res) => {
         model: Community
       },
       {
-        attributes: ['id', 'username', 'name'],
+        attributes: ['id', 'username', 'name', 'icon'],
         model: User
       },
       {
@@ -95,7 +114,12 @@ router.get('/:id', middleware.checkToken, (req, res) => {
         on: {
           item_id: db.sequelize.where(db.sequelize.col('activity.activity_ref_id'), '=', db.sequelize.col('sub_activities.id'))
         },
-        attributes: []
+        required: false,
+        attributes: ['id', 'type', 'text', 'attachment', 'expression', 'created_at'],
+        include: [{
+          attributes: ['id', 'username', 'name', 'icon'],
+          model: User
+        }]
       }
     ]
   }).then(data => {

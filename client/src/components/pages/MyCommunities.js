@@ -30,7 +30,12 @@ class CommunityManager extends Component {
     })
   }
 
-  html = (viewCommunities) => (
+  viewCommunity = (index) => e => {
+    let courseId = this.state.data[index].community.id
+    this.props.history.push('/community/' + courseId)
+  }
+
+  html = (viewCommunity) => (
     <div class="content-wrapper">
       <div>
         <div class="row">
@@ -48,7 +53,7 @@ class CommunityManager extends Component {
             this.state.data.map(function (val, index) {
               return <div class="col-md-3 grid-margin stretch-card" key={index}>
                 <div class="card" key={index}>
-                  <div class="card-body">
+                  <div class="card-body" onClick={viewCommunity(index)}>
                     <h3 class="card-title text-md-center">{val.community.name}</h3>
                     <h5 class="card-title text-md-center">{val.community.course.name}</h5>
                     <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
@@ -74,7 +79,7 @@ class CommunityManager extends Component {
     </div>
   )
   render() {
-    let html = this.html(this.viewCommunities)
+    let html = this.html(this.viewCommunity)
     return (
       html
     )
