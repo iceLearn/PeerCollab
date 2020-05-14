@@ -7,6 +7,8 @@ The concept of PeerCollab has been stimulated using the OpenSAP cuourse - Object
 
 [![Land on PeerCollab](PeerCollab-Landing.png)](https://peercollab-demo.educluster.com/)
 
+<h2>Explore PeerCollab</h2>
+https://peercollab-demo.educluster.com/
 
 <h2>How to use</h2>
 
