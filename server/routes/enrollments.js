@@ -5,16 +5,22 @@ const User = require('../models/user')
 const Community = require('../models/community')
 const Course = require('../models/course')
 const Enrollment = require('../models/enrollment')
+const Activity = require('../models/activity')
+const ActivePeriod = require('../models/active-period')
 const middleware = require('../middleware/auth-middleware')
 const { checkError, logger, ErrorType } = require('../util/error-utils')
 const { log, LogType } = require('../ctrl/user-logger')
 const Message = require('../ctrl/alert-messages')
+const Sequelize = require('sequelize')
 router.use(cors())
 const UI = 'ENROLLMENT'
 
 Community.hasOne(Course, { foreignKey: 'id', sourceKey: 'course_id' })
 Enrollment.hasOne(Community, { foreignKey: 'id', sourceKey: 'community_id' })
 Enrollment.hasOne(User, { foreignKey: 'id', sourceKey: 'user_id' })
+Community.hasMany(Enrollment, { as: 'enrollments', foreignKey: 'community_id', sourceKey: 'id' })
+Community.hasMany(Activity, { as: 'activities', foreignKey: 'community_id', sourceKey: 'id' })
+Community.hasMany(ActivePeriod, { as: 'periods', foreignKey: 'community_id', sourceKey: 'id' })
 
 router.get('/by-community/:id', middleware.checkToken, (req, res) => {
   Enrollment.findAll({
@@ -22,9 +28,12 @@ router.get('/by-community/:id', middleware.checkToken, (req, res) => {
     where: { 'community_id': req.params.id },
     include: [
       {
-        attributes: ['id', 'username', 'name', 'icon'],
+        attributes: ['id', 'username', 'name', 'level', 'icon'],
         model: User
       }
+    ],
+    order: [
+      ['level', 'DESC']
     ]
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
@@ -66,7 +75,10 @@ router.get('/by-user/:id', middleware.checkToken, (req, res) => {
 
 router.get('/my-communities', middleware.checkToken, (req, res) => {
   Enrollment.findAll({
-    attributes: ['id', 'level', 'time', 'state'],
+    attributes: ['id', 'level', 'time', 'state',
+      [Sequelize.literal('(SELECT COUNT(e.id) FROM enrollment e WHERE e.community_id = community.id)'), 'enrollments'],
+      [Sequelize.literal('(SELECT COUNT(a.id) FROM activity a WHERE a.community_id = community.id AND a.type=\'POST\')'), 'activities'],
+      [Sequelize.literal('(SELECT SUM(ap.time) FROM active_period ap WHERE ap.community_id = community.id AND ap.user_id=' + req.decoded.id + ')'), 'time']],
     where: { 'user_id': req.decoded.id },
     include: [
       {
@@ -79,12 +91,14 @@ router.get('/my-communities', middleware.checkToken, (req, res) => {
           }
         ]
       }
-    ]
+    ],
+    group: ['id']
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
     res.json(data)
     log(req, LogType.SELECT_ALL, null, UI, null, '')
   }).catch(err => {
+    console.log(err)
     res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
     logger.error(err)
     log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')

@@ -106,6 +106,7 @@ class CommunityManager extends Component {
       if (res.data.length > 0) {
         courseId = res.data[0].course_id
       }
+      console.log(res.data)
       this.setState({
         data: res.data,
         page: 'view',
@@ -130,7 +131,7 @@ class CommunityManager extends Component {
             this.state.data.map(function (val, index) {
               return <div class="col-md-3 grid-margin stretch-card">
                 <div class="card" key={index}>
-                  <div class="card-body" onClick={edit(index)}>
+                  <div class="card-body">
                     <h3 class="card-title text-md-center">{val.name}</h3>
                     <h5 class="card-title text-md-center">{val.course.name}</h5>
                     <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
@@ -139,13 +140,16 @@ class CommunityManager extends Component {
                       </p>
                     </div>
                     <div class="mt-4">
-                      {/* <div class="card-info float-left text-center">
-                        <i class="ti-user icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>30</p>
-                      </div> */}
-                      {/* <div class="card-info float-right text-center">
-                        <i class="ti-comment-alt icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>89</p>
-                      </div> */}
+                      <div class="card-info float-left text-center">
+                        <i class="ti-user icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>{val.enrollments}</p>
+                      </div>
+                      <div class="card-info float-right text-center">
+                        <i class="ti-comment-alt icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>{val.activities}</p>
+                      </div>
                     </div>
+                  </div>
+                  <div class="card-body text-md-center">
+                    <button type="submit" class="btn btn-secondary" onClick={edit(index)}>Edit</button>
                   </div>
                 </div>
               </div>

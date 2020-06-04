@@ -62,12 +62,12 @@ class CommunityManager extends Component {
                       </p>
                     </div>
                     <div class="mt-4">
-                      {/* <div class="card-info float-left text-center">
-                        <i class="ti-user icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>30</p>
-                      </div> */}
-                      {/* <div class="card-info float-right text-center">
-                        <i class="ti-comment-alt icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>89</p>
-                      </div> */}
+                      <div class="card-info float-left text-center">
+                        <i class="ti-user icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>{val.enrollments}</p>
+                      </div>
+                      <div class="card-info float-right text-center">
+                        <i class="ti-comment-alt icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>{val.activities}</p>
+                      </div>
                     </div>
                   </div>
                 </div>

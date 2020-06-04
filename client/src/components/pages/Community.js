@@ -5,6 +5,7 @@ import Texts from '../../Texts'
 import Notifier, { openSnackbar } from '../small-components/Notifier'
 
 const url = 'communities'
+let id = 0
 
 class Community extends Component {
 
@@ -17,11 +18,15 @@ class Community extends Component {
       enrollment: [],
       posts: [],
       users: [],
-      text: ''
+      text: '',
+      timeId: 0,
+      active: true
     }
   }
 
   componentDidMount() {
+    window.addEventListener("focus", this.onFocus)
+    window.addEventListener("blur", this.onBlur)
     this.setState({
       id: this.props.match.params.id,
       data: {},
@@ -29,7 +34,9 @@ class Community extends Component {
       enrollment: [],
       posts: [],
       users: [],
-      text: ''
+      text: '',
+      timeId: 0,
+      active: true
     }, () => {
       console.log(this.state.data)
       this.checkEnrollment()
@@ -37,9 +44,22 @@ class Community extends Component {
     })
   }
 
+  componentWillUnmount() {
+    id = 0
+    window.removeEventListener("focus", this.onFocus)
+    window.removeEventListener("blur", this.onBlur)
+  }
+
   componentWillReceiveProps(nextProps) {
     this.props = nextProps
     this.componentDidMount()
+  }
+
+  onFocus = () => {
+    this.setState({ active: true })
+  }
+  onBlur = () => {
+    this.setState({ active: false })
   }
 
   onChange = (e) => {
@@ -67,7 +87,6 @@ class Community extends Component {
   loadPosts() {
     axios.get('activities/by-community/' + this.state.id + '/0').then(res => {
       let posts = []
-      console.log(res.data)
       res.data.map(item => {
         item.commenting = false
         item.current_comment = ''
@@ -103,6 +122,8 @@ class Community extends Component {
           enrolled: true,
           enrollment: res.data[0]
         })
+        id = this.state.id
+        this.saveTime(this.state.id)
         axios.get('enrollments/by-community/' + this.state.id).then(res => {
           if (res.data.length > 0) {
             this.setState({
@@ -124,6 +145,33 @@ class Community extends Component {
     }).catch(err => {
       console.log(err)
     })
+  }
+
+  saveTime = (communityId) => {
+    if (this.state.timeId === 0) {
+      axios.post('active-periods', { 'community_id': this.state.id }).then(res => {
+        this.setState({
+          timeId: res.data.id
+        })
+      }).catch(err => {
+        console.log(err)
+      })
+    } else {
+      if (this.state.active) {
+        axios.put('active-periods', {
+          'id': this.state.timeId
+        }).then(res => {
+
+        }).catch(err => {
+          console.log(err)
+        })
+      }
+    }
+    if (id === communityId) {
+      setTimeout(() => {
+        this.saveTime(communityId)
+      }, 15000);
+    }
   }
 
   enroll = (e) => {
@@ -161,26 +209,28 @@ class Community extends Component {
   }
 
   comment = (index) => e => {
-    e.preventDefault()
-    axios.post('activities', {
-      'text': this.state.posts[index].current_comment,
-      'community_id': this.state.id,
-      'type': 'COMMENT',
-      'activity_ref_id': this.state.posts[index].id
-    }).then(res => {
-      if (res.data.status === true) {
-        // this.state.posts[index].current_comment = ''
-        // this.state.posts[index].commenting = false
-        // this.setState({
-        //   posts: this.state.posts
-        // })
-        this.loadPosts()
-      } else {
-        openSnackbar({ variant: 'error', message: Texts[res.data.message] })
-      }
-    }).catch(err => {
-      console.log(err)
-    })
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      axios.post('activities', {
+        'text': this.state.posts[index].current_comment,
+        'community_id': this.state.id,
+        'type': 'COMMENT',
+        'activity_ref_id': this.state.posts[index].id
+      }).then(res => {
+        if (res.data.status === true) {
+          // this.state.posts[index].current_comment = ''
+          // this.state.posts[index].commenting = false
+          // this.setState({
+          //   posts: this.state.posts
+          // })
+          this.loadPosts()
+        } else {
+          openSnackbar({ variant: 'error', message: Texts[res.data.message] })
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    }
   }
 
   like = (index) => e => {
@@ -306,67 +356,73 @@ class Community extends Component {
             <div class="card">
               <div class="card-body">
                 <h4 class="card-title">{this.state.data.hasOwnProperty('name') ? this.state.data.name : ''}</h4>
-                <form class="forms-sample">
-                  <div class="form-group">
-                    <label for="text">Write something</label>
-                    <textarea class="form-control" id="text" name="text" rows="4" value={this.state.text} onChange={this.onChange}></textarea>
-                  </div>
-                  <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                    <button type="button" class="file-upload-browse btn btn-link">
-                      <i class="ti-upload"></i> Photo/Video
+                <div class="form-group">
+                  <label for="text">Write something</label>
+                  <textarea class="form-control" id="text" name="text" rows="4" value={this.state.text} onChange={this.onChange}></textarea>
+                </div>
+                <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                  <button type="button" class="file-upload-browse btn btn-link">
+                    <i class="ti-upload"></i> Photo/Video
                       </button>
-                    <button type="button" class="btn btn-link">
-                      <i class="ti-tag"></i> Tag members
+                  <button type="button" class="btn btn-link">
+                    <i class="ti-tag"></i> Tag members
                       </button>
-                    <button type="submit" class="btn btn-secondary" onClick={this.post}>
-                      Post
+                  <button type="submit" class="btn btn-secondary" onClick={this.post}>
+                    Post
                       </button>
-                  </div>
-                  <div>
-                    {
-                      this.state.posts.map(function (val, index) {
-                        return <div class="form-group" style={{ textAlign: 'left' }} key={index}>
-                          <a class="nav-link" href="#" >
-                            <img src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'}
-                              width='50' alt="icon" />
-                          </a>
-                          {val.user.name + ' - ' + formatDate(val.created_at)}
-                          <p>{val.text}</p>
-                          <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                            {val.likes > 0 ? (val.likes > 1 ? val.likes + ' Likes' : '1 Like') : ''}
-                            <button type="button" class="btn btn-link" onClick={viewCommentField(index)}>
-                              <i class="ti-marker-alt"></i> Reply
-                            </button>
-                            <button type="button" class="btn btn-link" onClick={like(index)}>
-                              <i class="ti-thumb-up"></i> {val.liked ? 'Liked' : 'Like'}
-                            </button>
+                </div>
+                <div class="box box-widget">
+                  {
+                    this.state.posts.map(function (val, index) {
+                      return <div class="form-group" style={{ textAlign: 'left' }} key={index}>
+                        <div class="box-header with-border">
+                          <div class="user-block">
+                            <img class="avatar" src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'} alt="User Image" />
+                            <span class="username">{val.user.name}</span>
+                            <span class="description">{formatDate(val.created_at)}</span>
                           </div>
+                          <div class="box-tools">
+                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                          </div>
+                        </div>
+                        <div class="box-body" style={{ display: 'block' }}>
+                          {/* <img class="img-responsive pad" src="https://via.placeholder.com/600x300/" alt="Photo" /> */}
+                          <p>{val.text}</p>
+                          {/* <button type="button" class="btn btn-default btn-xs"><i class="fa fa-share"></i> Share</button> */}
+                          <button type="button" class="btn btn-default btn-xs" onClick={like(index)}><i class="fa fa-thumbs-o-up"></i> {val.liked ? 'Liked' : 'Like'}</button>
+                          <button type="button" class="btn btn-default btn-xs" onClick={viewCommentField(index)}><i class="ti-marker-alt"></i> Reply</button>
+                          <span class="pull-right text-muted">{val.likes > 0 ? (val.likes > 1 ? val.likes + ' Likes' : '1 Like') : ''}</span>
+                        </div>
+                        <div class="box-footer box-comments" style={{ display: 'block' }}>
                           {
                             val.comments.map(function (val2, index2) {
-                              return <div key={'sub' + val2.id}><a class="nav-link" href="#" >
-                                <img src={'../images/user_icons/' + (val2.sub_user.icon != null ? val2.sub_user.icon : 0) + '.jpg'}
-                                  width='30' alt="icon" />
-                              </a>
-                                {val2.sub_user.name + ' - ' + formatDate(val2.created_at)}
-                                <p>{val2.text}</p>
+                              return <div class="box-comment" key={'sub' + val2.id}>
+                                <img class="img-circle img-sm avatar" src={'../images/user_icons/' + (val2.sub_user.icon != null ? val2.sub_user.icon : 0) + '.jpg'} alt="User Image" />
+                                <div class="comment-text">
+                                  <span class="username">
+                                    {val2.sub_user.name}
+                                    <span class="text-muted pull-right">{formatDate(val2.created_at)}</span>
+                                  </span>
+                                  {val2.text}
+                                </div>
                               </div>
                             })
                           }
-                          <div class="forms-sample" style={{ display: val.commenting ? '' : 'none' }}>
-                            <div class="form-group">
-                              <textarea class="form-control" name="text" rows="1" value={val.current_comment} onChange={addComment(index)}></textarea>
-                            </div>
-                            <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                              <button type="submit" class="btn btn-secondary" onClick={comment(index)}>
-                                Comment
-                              </button>
-                            </div>
-                          </div>
                         </div>
-                      })
-                    }
-                  </div>
-                </form>
+                        <div class="box-footer" style={{ display: 'block', display: val.commenting ? '' : 'none' }}>
+                          <form action="#" method="post">
+                            <img class="img-responsive img-circle img-sm avatar" src={'../images/user_icons/' + (userInfo.icon != null ? userInfo.icon : 0) + '.jpg'} alt="Alt Text" />
+                            <div class="img-push">
+                              <input type="text" class="form-control input-sm"
+                                placeholder="Press enter to post comment" value={val.current_comment}
+                                onChange={addComment(index)} onKeyDown={comment(index)} />
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    })
+                  }
+                </div>
               </div>
             </div>
           </div>
@@ -376,16 +432,16 @@ class Community extends Component {
                 <h4 class="card-title">&nbsp;</h4>
                 <p class="card-description">
                   Members
-                  </p>
+                </p>
                 <form class="forms-sample">
                   {
                     this.state.users.map(function (val, index) {
-                      return <div class="form-group" style={{ textAlign: 'center' }} key={index}>
-                        <a class="nav-link" href="#" >
-                          <img src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'}
-                            width='50' alt="icon" />
-                        </a>
-                        {val.user.name}
+                      return <div key={index}>
+                      <div class="user-block">
+                          <img class="avatar" src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'}
+                            width='50' alt="icon" style={{ border: '2px solid ' + (val.level === 0 ? 'red' : 'blue') }} title={(val.level === 0 ? 'Community User' : 'Community Creator')} />
+                        <span class="username">{val.user.name}</span>
+                        </div>
                       </div>
                     })
                   }

@@ -2,81 +2,24 @@ const express = require('express')
 const router = express.Router()
 const cors = require('cors')
 const User = require('../models/user')
-const Course = require('../models/course')
+const Community = require('../models/community')
+const ActivePeriod = require('../models/active-period')
 const middleware = require('../middleware/auth-middleware')
 const { checkError, logger, ErrorType } = require('../util/error-utils')
 const { log, LogType } = require('../ctrl/user-logger')
 const Message = require('../ctrl/alert-messages')
+const Sequelize = require('sequelize')
+const db = require('../database/db')
 router.use(cors())
-const UI = 'COURSE'
+const UI = 'ACTIVE_PERIOD'
 
-Course.hasOne(User, { foreignKey: 'id', sourceKey: 'user_id' })
-
-router.get('/', middleware.checkToken, (req, res) => {
-  Course.findAll({
-    attributes: ['id', 'name', 'description', 'icon', 'created_at'],
-    include: [
-      {
-        attributes: ['id', 'username', 'name'],
-        model: User
-      }
-    ]
-  }).then(results => {
-    const data = results.map((node) => node.get({ plain: true }))
-    res.json(data)
-    log(req, LogType.SELECT_ALL, null, UI, null, '')
-  }).catch(err => {
-    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
-    logger.error(err)
-    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
-  })
-})
-
-router.get('/by-user', middleware.checkToken, (req, res) => {
-  Course.findAll({
-    attributes: ['id', 'name', 'description', 'icon', 'max_communities', 'max_students',
-      'state', 'created_at'],
-    where: {
-      user_id: req.decoded.id
-    }
-  }).then(results => {
-    const data = results.map((node) => node.get({ plain: true }))
-    res.json(data)
-    log(req, LogType.SELECT_ALL, null, UI, null, '')
-  }).catch(err => {
-    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
-    logger.error(err)
-    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
-  })
-})
-
-router.get('/count', middleware.checkToken, (req, res) => {
-  Course.count({
-    col: 'course.id'
-  }).then(data => {
-    res.json(data)
-    log(req, LogType.SELECT_ALL, null, UI, null, '')
-  }).catch(err => {
-    console.log(err)
-    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
-    logger.error(err)
-    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
-  })
-})
+ActivePeriod.hasOne(Community, { foreignKey: 'id', sourceKey: 'community_id' })
+ActivePeriod.hasOne(User, { foreignKey: 'id', sourceKey: 'user_id' })
 
 router.get('/:id', middleware.checkToken, (req, res) => {
-  Course.findOne({
-    attributes: ['id', 'name', 'description', 'icon', 'max_communities', 'max_students',
-      'state', 'created_at'],
-    where: {
-      id: req.params.id
-    },
-    include: [
-      {
-        attributes: ['id', 'username', 'name'],
-        model: User
-      }
-    ]
+  ActivePeriod.findOne({
+    attributes: ['id', 'time', 'created_at', 'updated_at'],
+    where: { 'user_id': req.params.id }
   }).then(data => {
     res.json(data)
     log(req, LogType.SELECT_ALL, null, UI, null, '')
@@ -89,7 +32,7 @@ router.get('/:id', middleware.checkToken, (req, res) => {
 
 router.post('/', middleware.checkToken, (req, res) => {
   req.body.user_id = req.decoded.id
-  Course.create(req.body).then(results => {
+  ActivePeriod.create(req.body).then(results => {
     res.json({ status: true, id: results.id })
     log(req, LogType.INSERT, results.id, UI, null, '')
   }).catch(err => {
@@ -105,8 +48,8 @@ router.post('/', middleware.checkToken, (req, res) => {
 })
 
 router.put('/', middleware.checkToken, (req, res) => {
-  Course.update(
-    req.body,
+  ActivePeriod.update(
+    { time: Sequelize.literal('time + 15') },
     { where: { id: req.body.id } }
   ).then(results => {
     res.json({ status: true })
@@ -124,7 +67,7 @@ router.put('/', middleware.checkToken, (req, res) => {
 })
 
 router.delete('/:id', middleware.checkToken, (req, res) => {
-  Course.destroy(
+  ActivePeriod.destroy(
     { where: { id: req.params.id } }
   ).then(results => {
     if (results === 0) {

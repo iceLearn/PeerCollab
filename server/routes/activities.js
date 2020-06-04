@@ -4,6 +4,7 @@ const cors = require('cors')
 const User = require('../models/user')
 const Community = require('../models/community')
 const Activity = require('../models/activity')
+const { addNotification } = require('../ctrl/notification-ctrl')
 const middleware = require('../middleware/auth-middleware')
 const { checkError, logger, ErrorType } = require('../util/error-utils')
 const { log, LogType } = require('../ctrl/user-logger')
@@ -26,7 +27,7 @@ router.get('/by-community/:id/:offset', middleware.checkToken, (req, res) => {
       'type': 'POST'
     },
     order: [
-      ['created_at', 'DESC']
+      ['id', 'DESC']
     ],
     offset: parseInt(req.params.offset),
     limit: 10,
@@ -132,9 +133,54 @@ router.get('/:id', middleware.checkToken, (req, res) => {
   })
 })
 
+function getActivity(postId) {
+  return new Promise((resolve, reject) => {
+    Activity.findOne({
+      attributes: ['user_id'],
+      where: { 'id': postId },
+      include: [
+        {
+          attributes: ['name'],
+          model: User
+        }
+      ]
+    }).then(data => {
+      resolve(data.dataValues)
+    }).catch(err => {
+      reject(err)
+    })
+  })
+}
+
 router.post('/', middleware.checkToken, (req, res) => {
   req.body.user_id = req.decoded.id
   Activity.create(req.body).then(results => {
+    switch (req.body.type) {
+      case 'POST':
+        break
+      case 'COMMENT':
+        getActivity(req.body.activity_ref_id).then(activity => {
+          if (req.body.user_id != activity.user_id) {
+            let text = activity.user.name + ' commented on your post'
+            let url = 'community/' + req.body.community_id
+            addNotification(text, url, activity.user_id)
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+        break
+      case 'EXPRESSION':
+        getActivity(req.body.activity_ref_id).then(activity => {
+          if (req.body.user_id != activity.user_id) {
+            let text = activity.user.name + ' liked your post'
+            let url = 'community/' + req.body.community_id
+            addNotification(text, url, activity.user_id)
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+        break
+    }
     res.json({ status: true, id: results.id })
     log(req, LogType.INSERT, results.id, UI, null, '')
   }).catch(err => {
