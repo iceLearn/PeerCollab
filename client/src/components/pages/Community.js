@@ -15,7 +15,7 @@ class Community extends Component {
       id: 0,
       data: {},
       enrolled: false,
-      enrollment: [],
+      enrollment: 0,
       posts: [],
       users: [],
       text: '',
@@ -31,7 +31,7 @@ class Community extends Component {
       id: this.props.match.params.id,
       data: {},
       enrolled: false,
-      enrollment: [],
+      enrollment: 0,
       posts: [],
       users: [],
       text: '',
@@ -118,8 +118,12 @@ class Community extends Component {
   checkEnrollment() {
     axios.get('enrollments/enrollment/' + this.state.id).then(res => {
       if (res.data.length > 0) {
+        let enrolled = false
+        if (res.data[0].state == 'ENROLLED') {
+          enrolled = true
+        }
         this.setState({
-          enrolled: true,
+          enrolled: enrolled,
           enrollment: res.data[0]
         })
         id = this.state.id
@@ -137,7 +141,7 @@ class Community extends Component {
       } else {
         this.setState({
           enrolled: false,
-          enrollment: [],
+          enrollment: 0,
           posts: [],
           users: []
         })
@@ -176,10 +180,61 @@ class Community extends Component {
 
   enroll = (e) => {
     e.preventDefault()
-    axios.post('enrollments', { 'community_id': this.state.id }).then(res => {
+    if (this.state.enrollment == 0) {
+      axios.post('enrollments', { 'community_id': this.state.id }).then(res => {
+        if (res.data.status === true) {
+          openSnackbar({ variant: 'success', message: Texts.MSG_SAVE_SUCCESS })
+          this.loadCommunity()
+          this.checkEnrollment()
+        } else {
+          openSnackbar({ variant: 'error', message: Texts[res.data.message] })
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    } else {
+      axios.put('enrollments', {
+        'id': this.state.enrollment.id,
+        'state': 'ENROLLED'
+      }).then(res => {
+        if (res.data.status === true) {
+          // openSnackbar({ variant: 'success', message: Texts.MSG_SAVE_SUCCESS })
+          this.loadCommunity()
+          this.checkEnrollment()
+        } else {
+          openSnackbar({ variant: 'error', message: Texts[res.data.message] })
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    }
+  }
+
+  leave = (e) => {
+    e.preventDefault()
+    axios.put('enrollments', {
+      'id': this.state.enrollment.id,
+      'state': 'LEFT'
+    }).then(res => {
       if (res.data.status === true) {
-        openSnackbar({ variant: 'success', message: Texts.MSG_SAVE_SUCCESS })
+        // openSnackbar({ variant: 'success', message: Texts.MSG_SAVE_SUCCESS })
         this.loadCommunity()
+        this.checkEnrollment()
+      } else {
+        openSnackbar({ variant: 'error', message: Texts[res.data.message] })
+      }
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+
+  removeUser = (id) => e => {
+    e.preventDefault()
+    axios.put('enrollments', {
+      'id': id,
+      'state': 'BLOCKED'
+    }).then(res => {
+      if (res.data.status === true) {
         this.checkEnrollment()
       } else {
         openSnackbar({ variant: 'error', message: Texts[res.data.message] })
@@ -263,6 +318,18 @@ class Community extends Component {
     }
   }
 
+  deleteActivity = (id) => e => {
+    axios.delete('activities/' + id).then(res => {
+      if (res.data.status === true) {
+        this.loadPosts()
+      } else {
+        openSnackbar({ variant: 'error', message: Texts[res.data.message] })
+      }
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+
   viewCommentField = (index) => e => {
     e.preventDefault()
     this.state.posts[index].commenting = !this.state.posts[index].commenting
@@ -279,11 +346,15 @@ class Community extends Component {
     })
   }
 
+  viewUser = (id) => e => {
+    this.props.history.push('/user/' + id)
+  }
+
   formatDate(date) {
     return date.substring(0, 19).replace('T', ' ')
   }
 
-  html = (formatDate, comment, viewCommentField, addComment, like) => (
+  html = (formatDate, comment, viewCommentField, addComment, like, viewUser, deleteActivity, removeUser, userId) => (
     <div>
       <div class="content-wrapper" style={{ display: !this.state.enrolled ? '' : 'none' }}>
         <div class="row">
@@ -374,15 +445,15 @@ class Community extends Component {
                 <div class="box box-widget">
                   {
                     this.state.posts.map(function (val, index) {
-                      return <div class="form-group" style={{ textAlign: 'left' }} key={index}>
+                      return <div class="form-group" style={{ textAlign: 'left' }} key={'p' + index}>
                         <div class="box-header with-border">
-                          <div class="user-block">
+                          <div class="user-block" onClick={viewUser(val.user.id)}>
                             <img class="avatar" src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'} alt="User Image" />
                             <span class="username">{val.user.name}</span>
                             <span class="description">{formatDate(val.created_at)}</span>
                           </div>
-                          <div class="box-tools">
-                            <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                          <div class="box-tools" style={{ display: userInfo['id'] == val.user.id ? '' : 'none' }}>
+                            <button type="button" class="btn btn-box-tool" data-widget="remove" onClick={deleteActivity(val.id)}><i class="fa fa-times"></i></button>
                           </div>
                         </div>
                         <div class="box-body" style={{ display: 'block' }}>
@@ -397,11 +468,16 @@ class Community extends Component {
                           {
                             val.comments.map(function (val2, index2) {
                               return <div class="box-comment" key={'sub' + val2.id}>
-                                <img class="img-circle img-sm avatar" src={'../images/user_icons/' + (val2.sub_user.icon != null ? val2.sub_user.icon : 0) + '.jpg'} alt="User Image" />
+                                <img class="img-circle img-sm avatar" src={'../images/user_icons/'
+                                  + (val2.sub_user.icon != null ? val2.sub_user.icon : 0) + '.jpg'} alt="User Image" onClick={viewUser(val2.sub_user.id)} />
                                 <div class="comment-text">
                                   <span class="username">
-                                    {val2.sub_user.name}
-                                    <span class="text-muted pull-right">{formatDate(val2.created_at)}</span>
+                                    <span onClick={viewUser(val2.sub_user.id)}> {val2.sub_user.name}</span>
+                                    <span class="text-muted pull-right">
+                                      {formatDate(val2.created_at)}
+                                      <button type="button" class="btn btn-box-tool" style={{ display: userInfo['id'] == val2.sub_user.id ? '' : 'none' }}
+                                        data-widget="remove" onClick={deleteActivity(val2.id)}><i class="fa fa-times"></i></button>
+                                    </span>
                                   </span>
                                   {val2.text}
                                 </div>
@@ -430,6 +506,10 @@ class Community extends Component {
             <div class="card">
               <div class="card-body">
                 <h4 class="card-title">&nbsp;</h4>
+                <button type="submit" class="btn btn-secondary" onClick={this.leave}
+                  style={{ display: this.state.data.user_id != userInfo['id'] ? '' : 'none' }}>
+                  Leave Community
+                </button>
                 <p class="card-description">
                   Members
                 </p>
@@ -437,11 +517,15 @@ class Community extends Component {
                   {
                     this.state.users.map(function (val, index) {
                       return <div key={index}>
-                      <div class="user-block">
+                        <div class="user-block" onClick={viewUser(val.id)}>
                           <img class="avatar" src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'}
                             width='50' alt="icon" style={{ border: '2px solid ' + (val.level === 0 ? 'red' : 'blue') }} title={(val.level === 0 ? 'Community User' : 'Community Creator')} />
-                        <span class="username">{val.user.name}</span>
+                          <span class="username">{val.user.name}</span>
                         </div>
+                        <span class="text-muted pull-right">
+                          <button type="button" class="btn btn-box-tool" style={{ display: userInfo['id'] == userId ? (userInfo['id'] != val.user.id ? '' : 'none') : 'none' }}
+                            data-widget="remove" onClick={removeUser(val.id)}><i class="fa fa-times"></i></button>
+                        </span>
                       </div>
                     })
                   }
@@ -454,7 +538,8 @@ class Community extends Component {
     </div>
   )
   render() {
-    let html = this.html(this.formatDate, this.comment, this.viewCommentField, this.addComment, this.like)
+    let html = this.html(this.formatDate, this.comment, this.viewCommentField, this.addComment,
+      this.like, this.viewUser, this.deleteActivity, this.removeUser, this.state.data.user_id)
     return (
       html
     )

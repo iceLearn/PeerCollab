@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { userInfo } from '../../info'
 import axios from '../../ctrl/AxiosConf'
+import {shortenDescription} from '../../ctrl/Validator'
 import Texts from '../../Texts'
 import Notifier, { openSnackbar } from '../small-components/Notifier'
 
@@ -103,7 +104,7 @@ class CourseManager extends Component {
                     <h3 class="card-title text-md-center">{val.name}</h3>
                     <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
                       <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">
-                        {val.description}
+                        {shortenDescription(val.description)}
                       </p>
                     </div>
                     <div class="mt-4">

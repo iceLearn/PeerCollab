@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { userInfo } from '../../info'
 import axios from '../../ctrl/AxiosConf'
+import { shortenDescription } from '../../ctrl/Validator'
 import Texts from '../../Texts'
 import Notifier, { openSnackbar } from '../small-components/Notifier'
 
@@ -14,6 +15,7 @@ class CommunityManager extends Component {
       data: [],
       courses: [],
       courseId: 0,
+      query: ''
     }
     this.loadCourses()
   }
@@ -33,11 +35,19 @@ class CommunityManager extends Component {
     }, () => {
       this.loadData()
     })
-  } 
+  }
 
   viewCommunity = (index) => e => {
     let courseId = this.state.data[index].id
     this.props.history.push('/community/' + courseId)
+  }
+
+  search = e => {
+    this.setState({
+      query: e.target.value
+    }, () => {
+      this.loadCourses()
+    })
   }
 
   loadData() {
@@ -58,7 +68,11 @@ class CommunityManager extends Component {
   }
 
   loadCourses() {
-    axios.get('courses').then(res => {
+    let url = 'courses'
+    if (this.state.query != '') {
+      url = 'courses/search/' + this.state.query
+    }
+    axios.get(url).then(res => {
       this.setState({
         courses: res.data,
         courseId: 0
@@ -75,6 +89,20 @@ class CommunityManager extends Component {
           <div class="col-12">
             <h5>Select a course</h5>
           </div>
+          <div class="col-12">
+            <div class="input-group">
+              <div class="input-group-prepend hover-cursor" id="navbar-search-icon">
+                <span class="input-group-text" id="search">
+                  <i class="ti-search"></i>
+                </span>
+              </div>
+              <input type="text" class="form-control" id="navbar-search-input" placeholder="Search course"
+                aria-label="search" aria-describedby="search" onChange={this.search} value={this.state.query} />
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <h2></h2>
         </div>
         <div class="row" >
           {
@@ -85,7 +113,7 @@ class CommunityManager extends Component {
                     <h3 class="card-title text-md-center">{val.name}</h3>
                     <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
                       <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">
-                        {val.description}
+                        {shortenDescription(val.description)}
                       </p>
                     </div>
                     <div class="mt-4">
@@ -123,7 +151,7 @@ class CommunityManager extends Component {
                     <h3 class="card-title text-md-center">{val.name}</h3>
                     <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
                       <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">
-                        {val.description}
+                        {shortenDescription(val.description)}
                       </p>
                     </div>
                     <div class="mt-4">

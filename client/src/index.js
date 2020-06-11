@@ -26,6 +26,8 @@ if (token) {
     serviceWorker.unregister()
   }).catch(err => {
     console.log(err)
+    ReactDOM.render(<App />, document.getElementById('root'))
+    serviceWorker.unregister()
   })
 } else {
   ReactDOM.render(<App />, document.getElementById('root'))

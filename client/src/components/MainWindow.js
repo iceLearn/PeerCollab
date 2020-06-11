@@ -15,6 +15,8 @@ import CourseManager from './pages/CourseManager'
 import CommunityManager from './pages/CommunityManager'
 import MyCommunities from './pages/MyCommunities'
 import Community from './pages/Community'
+import User from './pages/User'
+import { login } from '../ctrl/UserFunctions'
 
 class MainWindow extends React.Component {
 
@@ -58,6 +60,7 @@ class MainWindow extends React.Component {
               <Route exact path='/community-browser' component={Courses} />
               <Route exact path='/my-communities' component={MyCommunities} />
               <Route exact path='/community/:id' component={Community} />
+              <Route exact path='/user/:id' component={User} />
               {/* <Route exact path='/' component={Landing} />
               <Route exact path='/' component={Landing} />
               <Route exact path='/' component={Landing} />
@@ -85,6 +88,24 @@ class MainWindow extends React.Component {
     if (localStorage.usertoken) {
       try {
         const decoded = jwtDecode(localStorage.usertoken)
+        const user = {
+          username: decoded.username,
+          password: decoded.password
+        }
+        // console.log(user)
+        // login(user).then(res => {
+        //   if (res.error || res.warning) {
+        //     console.log(res.error)
+        //     console.log(res.warning)
+        //     localStorage.removeItem('usertoken')
+        //     axios.post('users/logout').then(res => {
+        //     }).catch(err => {
+        //       console.log(err)
+        //     })
+        //     // window.location.reload()
+        //   } else {
+        //   }
+        // })
         html = this.Auth(this.props.classes)
       } catch (error) {
         console.log(error)

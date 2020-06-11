@@ -428,7 +428,7 @@ class Profile extends Component {
             <div class="card-body"> 
               <h4 class="card-title">&nbsp;</h4>
               <p class="card-description">
-                Profile Image
+                Profile Image 
                   </p>
               <form class="forms-sample">
                 <div class="form-group" style={{ textAlign: 'center' }}>

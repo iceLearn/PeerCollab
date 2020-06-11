@@ -70,7 +70,7 @@ router.get('/by-user', middleware.checkToken, (req, res) => {
 
 router.get('/:id', middleware.checkToken, (req, res) => {
   Community.findOne({
-    attributes: ['id', 'name', 'description', 'type', 'state', 'created_at', 'course_id'],
+    attributes: ['id', 'name', 'description', 'type', 'state', 'created_at', 'course_id', 'user_id'],
     where: { 'id': req.params.id },
     include: [
       {
