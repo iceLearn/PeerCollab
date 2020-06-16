@@ -15,6 +15,8 @@ class CommunityManager extends Component {
       data: [],
       courses: [],
       courseId: 0,
+      courseName: '',
+      courseDescription: '',
       query: ''
     }
     this.loadCourses()
@@ -30,8 +32,11 @@ class CommunityManager extends Component {
   }
 
   viewCommunities = (index) => e => {
+    let course = this.state.courses[index]
     this.setState({
-      courseId: this.state.courses[index].id
+      courseId: course.id,
+      courseName: course.name,
+      courseDescription: course.description
     }, () => {
       this.loadData()
     })
@@ -139,7 +144,8 @@ class CommunityManager extends Component {
             </div>
           </div>
           <div class="col-10">
-            <h5>Select a community</h5>
+            <h5>Communities of the course: {this.state.courseName}</h5>
+            <p>{this.state.courseDescription}</p>
           </div>
         </div>
         <div class="row" >

@@ -35,8 +35,9 @@ router.get('/by-community/:id', middleware.checkToken, (req, res) => {
         model: User
       }
     ],
+    group: ['user_id'],
     order: [
-      ['level', 'DESC']
+      ['id', 'ASC']
     ]
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
@@ -54,7 +55,8 @@ router.get('/by-user/:id', middleware.checkToken, (req, res) => {
     attributes: ['id', 'level', 'time', 'state',
       [Sequelize.literal('(SELECT COUNT(e.id) FROM enrollment e WHERE e.community_id = community.id)'), 'enrollments'],
       [Sequelize.literal('(SELECT COUNT(a.id) FROM activity a WHERE a.community_id = community.id AND a.type=\'POST\')'), 'activities'],
-      [Sequelize.literal('(SELECT SUM(ap.time) FROM active_period ap WHERE ap.community_id = community.id AND ap.user_id=' + req.decoded.id + ')'), 'time']],
+      [Sequelize.literal('(SELECT SUM(ap.time) FROM active_period ap WHERE ap.community_id = community.id AND ap.user_id=' + req.params.id + ')'), 'time']
+    ],
     where: {
       'user_id': req.params.id,
       'state': 'ENROLLED'
@@ -68,10 +70,14 @@ router.get('/by-user/:id', middleware.checkToken, (req, res) => {
             attributes: ['id', 'name', 'icon'],
             model: Course
           }
-        ]
+        ],
+        require: false
       }
     ],
-    group: ['id']
+    group: ['community_id'],
+    order: [
+      ['id', 'ASC']
+    ]
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
     res.json(data)
@@ -103,10 +109,14 @@ router.get('/my-communities', middleware.checkToken, (req, res) => {
             attributes: ['id', 'name', 'icon'],
             model: Course
           }
-        ]
+        ],
+        require: false
       }
     ],
-    group: ['id']
+    group: ['community_id'],
+    order: [
+      ['id', 'ASC']
+    ]
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
     res.json(data)
@@ -125,7 +135,11 @@ router.get('/enrollment/:id', middleware.checkToken, (req, res) => {
     where: {
       'user_id': req.decoded.id,
       'community_id': req.params.id
-    }
+    },
+    group: ['community_id'],
+    order: [
+      ['id', 'ASC']
+    ]
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
     res.json(data)

@@ -10,16 +10,17 @@ class User extends Component {
     super()
     this.state = {
       id: 0,
-      communities: []
+      communities: [],
+      userData:{}
     }
   }
 
   componentDidMount() {
     this.setState({
       id: this.props.match.params.id,
-      communities: []
+      communities: [],
+      userData:{}
     }, () => {
-      console.log(this.state.id)
       this.loadData()
     })
   }
@@ -37,6 +38,13 @@ class User extends Component {
     }).catch(err => {
       console.log(err)
     })
+    axios.get('user-master/by-id/' + this.state.id).then(res => {
+      this.setState({
+        userData: res.data
+      })
+    }).catch(err => {
+      console.log(err)
+    })
   }
 
   viewCommunity = (index) => e => {
@@ -50,7 +58,7 @@ class User extends Component {
         <div class="col-md-12 grid-margin">
           <div class="d-flex justify-content-between align-items-center">
             <div>
-              <h4 class="font-weight-bold mb-0">{userInfo['name']}</h4>
+              <h4 class="font-weight-bold mb-0">{this.state.userData.name}</h4>
             </div>
           </div>
         </div>
@@ -60,7 +68,7 @@ class User extends Component {
           <div class="card">
             <div class="card-body">
               <div class="form-group" style={{ textAlign: 'center' }}>
-                <img src={'images/user_icons/' + (userInfo['icon'] != null ? userInfo['icon'] : 0) + '.jpg'} width='200px' />
+                <img src={'../images/user_icons/' + (this.state.userData.icon != null ? this.state.userData.icon : 0) + '.jpg'} width='200px' />
               </div>
             </div>
           </div>
@@ -70,7 +78,7 @@ class User extends Component {
             <div class="card-body">
               <p class="card-title text-md-center text-xl-left">Bio</p>
               <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
-                {userInfo['bio']}
+                {this.state.userData.bio}
               </div>
             </div>
           </div>
@@ -146,7 +154,8 @@ class User extends Component {
                     <div class="col-md-12 col-xl-3 d-flex flex-column justify-content-center">
                       <div class="ml-xl-4">
                         <h3 class="font-weight-light mb-xl-4">Time spent in the community</h3>
-                        <h2>{parseInt(parseInt(val.time) / 3600)} h {parseInt(parseInt(parseInt(val.time) % 3600) / 60)} min</h2>
+                        <h2>{val.time == null ? '' : (parseInt(parseInt(val.time) / 3600) == 0 ? '' : parseInt(parseInt(val.time) / 3600) + ' h ')}
+                          {val.time == null ? 0 : parseInt(parseInt(parseInt(val.time) % 3600) / 60)} min</h2>
                       </div>
                     </div>
                   </div>

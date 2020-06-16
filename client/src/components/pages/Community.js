@@ -20,7 +20,8 @@ class Community extends Component {
       users: [],
       text: '',
       timeId: 0,
-      active: true
+      active: true,
+      ui: 'posts'
     }
   }
 
@@ -36,7 +37,8 @@ class Community extends Component {
       users: [],
       text: '',
       timeId: 0,
-      active: true
+      active: true,
+      ui: 'posts'
     }, () => {
       console.log(this.state.data)
       this.checkEnrollment()
@@ -129,6 +131,7 @@ class Community extends Component {
         id = this.state.id
         this.saveTime(this.state.id)
         axios.get('enrollments/by-community/' + this.state.id).then(res => {
+          console.log(res.data)
           if (res.data.length > 0) {
             this.setState({
               users: res.data
@@ -350,193 +353,230 @@ class Community extends Component {
     this.props.history.push('/user/' + id)
   }
 
+  switchUI = e => {
+    let ui = 'posts'
+    if (this.state.ui == 'posts') {
+      ui = 'users'
+    }
+    this.setState({
+      ui: ui
+    })
+  }
+
   formatDate(date) {
     return date.substring(0, 19).replace('T', ' ')
   }
 
-  html = (formatDate, comment, viewCommentField, addComment, like, viewUser, deleteActivity, removeUser, userId) => (
-    <div>
-      <div class="content-wrapper" style={{ display: !this.state.enrolled ? '' : 'none' }}>
-        <div class="row">
-          <div class="col-md-3 grid-margin stretch-card">
-            <div class="card">
-              <div class="card-body">
-                <p class="card-title text-md-center text-xl-left">Course Name</p>
-                <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
-                  <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">{this.state.data.hasOwnProperty('course') ? this.state.data.course.name : ''}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 grid-margin stretch-card">
-            <div class="card">
-              <div class="card-body">
-                <p class="card-title text-md-center text-xl-left">Community Name</p>
-                <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
-                  <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">{this.state.data.hasOwnProperty('name') ? this.state.data.name : ''}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 grid-margin stretch-card">
-            <div class="card">
-              <div class="card-body">
-                <p class="card-title text-md-center text-xl-left">Description</p>
-                <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
-                  <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">{this.state.data.hasOwnProperty('description') ? this.state.data.description : ''}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-12 grid-margin">
-            <div class="card">
-              <div class="card-body">
-                <h4 class="card-title">Join {this.state.data.hasOwnProperty('name') ? this.state.data.name : ''} </h4>
-                <form class="form-sample">
-                  <p class="card-description"></p>
-                  <div class="row">
-                    <div class="col-md-6">
-                      <div class="form-group">
-                        <p>Sample agreement</p>
-                      </div>
-                      <div class="form-group">
-                        <div class="form-check form-check-flat form-check-primary">
-                          <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" />Yes I understand<i class="input-helper" ></i></label>
-                        </div>
-                        <button type="submit" class="btn btn-primary" onClick={this.enroll}>Join community</button>
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <div class="form-group">
-
-                      </div>
-                    </div>
+  html = (formatDate, comment, viewCommentField, addComment, like, viewUser, deleteActivity,
+    removeUser, userId) => (
+      <div>
+        <div class="content-wrapper" style={{ display: !this.state.enrolled ? '' : 'none' }}>
+          <div class="row">
+            <div class="col-md-3 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title text-md-center text-xl-left">Course Name</p>
+                  <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
+                    <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">{this.state.data.hasOwnProperty('course') ? this.state.data.course.name : ''}</p>
                   </div>
-                </form>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title text-md-center text-xl-left">Community Name</p>
+                  <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
+                    <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">{this.state.data.hasOwnProperty('name') ? this.state.data.name : ''}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <p class="card-title text-md-center text-xl-left">Description</p>
+                  <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
+                    <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">{this.state.data.hasOwnProperty('description') ? this.state.data.description : ''}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-12 grid-margin">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">Join {this.state.data.hasOwnProperty('name') ? this.state.data.name : ''} </h4>
+                  <form class="form-sample">
+                    <p class="card-description"></p>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <p>Sample agreement</p>
+                        </div>
+                        <div class="form-group">
+                          <div class="form-check form-check-flat form-check-primary">
+                            <label class="form-check-label">
+                              <input type="checkbox" class="form-check-input" />Yes I understand<i class="input-helper" ></i></label>
+                          </div>
+                          <button type="submit" class="btn btn-primary" onClick={this.enroll}>Join community</button>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group">
+
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="content-wrapper" style={{ display: this.state.enrolled ? '' : 'none' }}>
-        <div class="row">
-          <div class="col-md-9 grid-margin stretch-card">
-            <div class="card">
-              <div class="card-body">
-                <h4 class="card-title">{this.state.data.hasOwnProperty('name') ? this.state.data.name : ''}</h4>
-                <div class="form-group">
-                  <label for="text">Write something</label>
-                  <textarea class="form-control" id="text" name="text" rows="4" value={this.state.text} onChange={this.onChange}></textarea>
-                </div>
-                <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                  <button type="button" class="file-upload-browse btn btn-link">
-                    <i class="ti-upload"></i> Photo/Video
+        <div class="content-wrapper" style={{ display: this.state.enrolled ? '' : 'none' }}>
+          <div class="row">
+            <div class="col-md-9 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body" style={{ display: this.state.ui == 'posts' ? '' : 'none' }}>
+                  <h4 class="card-title">{this.state.data.hasOwnProperty('name') ? this.state.data.name : ''}</h4>
+                  <div class="form-group">
+                    <label for="text">Write something</label>
+                    <textarea class="form-control" id="text" name="text" rows="4" value={this.state.text} onChange={this.onChange}></textarea>
+                  </div>
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                    <button type="button" class="file-upload-browse btn btn-link">
+                      <i class="ti-upload"></i> Photo/Video
                       </button>
-                  <button type="button" class="btn btn-link">
-                    <i class="ti-tag"></i> Tag members
+                    <button type="button" class="btn btn-link">
+                      <i class="ti-tag"></i> Tag members
                       </button>
-                  <button type="submit" class="btn btn-secondary" onClick={this.post}>
-                    Post
+                    <button type="submit" class="btn btn-secondary" onClick={this.post}>
+                      Post
                       </button>
-                </div>
-                <div class="box box-widget">
-                  {
-                    this.state.posts.map(function (val, index) {
-                      return <div class="form-group" style={{ textAlign: 'left' }} key={'p' + index}>
-                        <div class="box-header with-border">
-                          <div class="user-block" onClick={viewUser(val.user.id)}>
-                            <img class="avatar" src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'} alt="User Image" />
-                            <span class="username">{val.user.name}</span>
-                            <span class="description">{formatDate(val.created_at)}</span>
-                          </div>
-                          <div class="box-tools" style={{ display: userInfo['id'] == val.user.id ? '' : 'none' }}>
-                            <button type="button" class="btn btn-box-tool" data-widget="remove" onClick={deleteActivity(val.id)}><i class="fa fa-times"></i></button>
-                          </div>
-                        </div>
-                        <div class="box-body" style={{ display: 'block' }}>
-                          {/* <img class="img-responsive pad" src="https://via.placeholder.com/600x300/" alt="Photo" /> */}
-                          <p>{val.text}</p>
-                          {/* <button type="button" class="btn btn-default btn-xs"><i class="fa fa-share"></i> Share</button> */}
-                          <button type="button" class="btn btn-default btn-xs" onClick={like(index)}><i class="fa fa-thumbs-o-up"></i> {val.liked ? 'Liked' : 'Like'}</button>
-                          <button type="button" class="btn btn-default btn-xs" onClick={viewCommentField(index)}><i class="ti-marker-alt"></i> Reply</button>
-                          <span class="pull-right text-muted">{val.likes > 0 ? (val.likes > 1 ? val.likes + ' Likes' : '1 Like') : ''}</span>
-                        </div>
-                        <div class="box-footer box-comments" style={{ display: 'block' }}>
-                          {
-                            val.comments.map(function (val2, index2) {
-                              return <div class="box-comment" key={'sub' + val2.id}>
-                                <img class="img-circle img-sm avatar" src={'../images/user_icons/'
-                                  + (val2.sub_user.icon != null ? val2.sub_user.icon : 0) + '.jpg'} alt="User Image" onClick={viewUser(val2.sub_user.id)} />
-                                <div class="comment-text">
-                                  <span class="username">
-                                    <span onClick={viewUser(val2.sub_user.id)}> {val2.sub_user.name}</span>
-                                    <span class="text-muted pull-right">
-                                      {formatDate(val2.created_at)}
-                                      <button type="button" class="btn btn-box-tool" style={{ display: userInfo['id'] == val2.sub_user.id ? '' : 'none' }}
-                                        data-widget="remove" onClick={deleteActivity(val2.id)}><i class="fa fa-times"></i></button>
-                                    </span>
-                                  </span>
-                                  {val2.text}
-                                </div>
-                              </div>
-                            })
-                          }
-                        </div>
-                        <div class="box-footer" style={{ display: 'block', display: val.commenting ? '' : 'none' }}>
-                          <form action="#" method="post">
-                            <img class="img-responsive img-circle img-sm avatar" src={'../images/user_icons/' + (userInfo.icon != null ? userInfo.icon : 0) + '.jpg'} alt="Alt Text" />
-                            <div class="img-push">
-                              <input type="text" class="form-control input-sm"
-                                placeholder="Press enter to post comment" value={val.current_comment}
-                                onChange={addComment(index)} onKeyDown={comment(index)} />
+                  </div>
+                  <div class="box box-widget">
+                    {
+                      this.state.posts.map(function (val, index) {
+                        return <div class="form-group" style={{ textAlign: 'left' }} key={'p' + index}>
+                          <div class="box-header with-border">
+                            <div class="user-block" onClick={viewUser(val.user.id)}>
+                              <img class="avatar" src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'} alt="User Image" />
+                              <span class="username">{val.user.name}</span>
+                              <span class="description">{formatDate(val.created_at)}</span>
                             </div>
-                          </form>
+                            <div class="box-tools" style={{ display: userInfo['id'] == val.user.id ? '' : 'none' }}>
+                              <button type="button" class="btn btn-box-tool" data-widget="remove" onClick={deleteActivity(val.id)}><i class="fa fa-times"></i></button>
+                            </div>
+                          </div>
+                          <div class="box-body" style={{ display: 'block' }}>
+                            {/* <img class="img-responsive pad" src="https://via.placeholder.com/600x300/" alt="Photo" /> */}
+                            <p>{val.text}</p>
+                            {/* <button type="button" class="btn btn-default btn-xs"><i class="fa fa-share"></i> Share</button> */}
+                            <button type="button" class="btn btn-default btn-xs" onClick={like(index)}><i class="fa fa-thumbs-o-up"></i> {val.liked ? 'Liked' : 'Like'}</button>
+                            <button type="button" class="btn btn-default btn-xs" onClick={viewCommentField(index)}><i class="ti-marker-alt"></i> Reply</button>
+                            <span class="pull-right text-muted">{val.likes > 0 ? (val.likes > 1 ? val.likes + ' Likes' : '1 Like') : ''}</span>
+                          </div>
+                          <div class="box-footer box-comments" style={{ display: 'block' }}>
+                            {
+                              val.comments.map(function (val2, index2) {
+                                return <div class="box-comment" key={'sub' + val2.id}>
+                                  <img class="img-circle img-sm avatar" src={'../images/user_icons/'
+                                    + (val2.sub_user.icon != null ? val2.sub_user.icon : 0) + '.jpg'} alt="User Image" onClick={viewUser(val2.sub_user.id)} />
+                                  <div class="comment-text">
+                                    <span class="username">
+                                      <span onClick={viewUser(val2.sub_user.id)}> {val2.sub_user.name}</span>
+                                      <span class="text-muted pull-right">
+                                        {formatDate(val2.created_at)}
+                                        <button type="button" class="btn btn-box-tool" style={{ display: userInfo['id'] == val2.sub_user.id ? '' : 'none' }}
+                                          data-widget="remove" onClick={deleteActivity(val2.id)}><i class="fa fa-times"></i></button>
+                                      </span>
+                                    </span>
+                                    {val2.text}
+                                  </div>
+                                </div>
+                              })
+                            }
+                          </div>
+                          <div class="box-footer" style={{ display: 'block', display: val.commenting ? '' : 'none' }}>
+                            <form action="#" method="post">
+                              <img class="img-responsive img-circle img-sm avatar" src={'../images/user_icons/' + (userInfo.icon != null ? userInfo.icon : 0) + '.jpg'} alt="Alt Text" />
+                              <div class="img-push">
+                                <input type="text" class="form-control input-sm"
+                                  placeholder="Press enter to post comment" value={val.current_comment}
+                                  onChange={addComment(index)} onKeyDown={comment(index)} />
+                              </div>
+                            </form>
+                          </div>
                         </div>
-                      </div>
-                    })
-                  }
+                      })
+                    }
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-3 grid-margin stretch-card">
-            <div class="card">
-              <div class="card-body">
-                <h4 class="card-title">&nbsp;</h4>
-                <button type="submit" class="btn btn-secondary" onClick={this.leave}
-                  style={{ display: this.state.data.user_id != userInfo['id'] ? '' : 'none' }}>
-                  Leave Community
-                </button>
-                <p class="card-description">
-                  Members
-                </p>
-                <form class="forms-sample">
+                <div class="card-body" style={{ display: this.state.ui == 'users' ? '' : 'none' }}>
+                  <h4 class="card-title">{this.state.data.hasOwnProperty('name') ? this.state.data.name : ''}</h4>
                   {
                     this.state.users.map(function (val, index) {
-                      return <div key={index}>
+                      return <div class="box-header with-border">
                         <div class="user-block" onClick={viewUser(val.id)}>
-                          <img class="avatar" src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'}
-                            width='50' alt="icon" style={{ border: '2px solid ' + (val.level === 0 ? 'red' : 'blue') }} title={(val.level === 0 ? 'Community User' : 'Community Creator')} />
+                          <img class="avatar" src={'../images/user_icons/' + (val.user.icon != null ? val.user.icon : 0) + '.jpg'} alt="#" />
                           <span class="username">{val.user.name}</span>
                         </div>
-                        <span class="text-muted pull-right">
-                          <button type="button" class="btn btn-box-tool" style={{ display: userInfo['id'] == userId ? (userInfo['id'] != val.user.id ? '' : 'none') : 'none' }}
-                            data-widget="remove" onClick={removeUser(val.id)}><i class="fa fa-times"></i></button>
-                        </span>
+                        <div class="box-tools">
+                          <button type="button" class="btn btn-box-tool" data-widget="remove"
+                            style={{
+                              display: userInfo['id'] == userId ?
+                                (userInfo['id'] != val.user.id ? '' : 'none') : 'none'
+                            }}
+                            onClick={removeUser(val.id)}>
+                            <i class="fa fa-times"></i></button>
+                        </div>
                       </div>
                     })
                   }
-                </form>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-3 grid-margin stretch-card">
+              <div class="card">
+                <div class="card-body">
+                  <h4 class="card-title">&nbsp;</h4>
+                  <button type="submit" class="btn btn-secondary" onClick={this.leave}
+                    style={{ display: this.state.data.user_id != userInfo['id'] ? '' : 'none' }}>
+                    Leave Community
+                </button>
+                  <button type="submit" class="btn btn-secondary" onClick={this.switchUI}
+                    style={{ display: this.state.data.user_id == userInfo['id'] ? '' : 'none' }}>
+                    {this.state.ui == 'posts' ? 'Remove Members' : 'Posts'}
+                  </button>
+                  <p class="card-description">
+                    Members
+                </p>
+                  <form class="forms-sample">
+                    {
+                      this.state.users.map(function (val, index) {
+                        return <div key={index}>
+                          <div class="user-block" onClick={viewUser(val.user.id)}>
+                            <img class="avatar" src={'../images/user_icons/' +
+                              (val.user.icon != null ? val.user.icon : 0) + '.jpg'}
+                              width='50' alt="icon" style={{
+                                border: '2px solid ' + (val.user.id != userId ? 'red' : 'blue'),
+                                marginRight: '5px', marginBottom: '5px'
+                              }}
+                              title={val.user.name + ' (' + (val.user.id != userId ? 'Community User' : 'Community Creator') + ')'} />
+                          </div>
+                        </div>
+                      })
+                    }
+                  </form>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  )
+    )
   render() {
     let html = this.html(this.formatDate, this.comment, this.viewCommentField, this.addComment,
       this.like, this.viewUser, this.deleteActivity, this.removeUser, this.state.data.user_id)
