@@ -5,14 +5,15 @@ const cors = require('cors')
 const User = require('../models/user')
 const middleware = require('../middleware/auth-middleware')
 const { checkError, logger, ErrorType } = require('../util/error-utils')
+const { log, LogType } = require('../ctrl/user-logger')
 const Message = require('../ctrl/alert-messages')
 router.use(cors())
-const UI = 'USER'
+const UI = 'USER_MASTER'
 const Op = Sequelize.Op
 
 router.get('/', middleware.checkToken, (req, res) => {
   User.findAll({
-    attributes: ['id', 'name', 'email', 'username', 'icon', 'country', 'timezone', 'bio', 'level', 'state', 'created_at'],
+    attributes: ['id', 'name', 'email', 'username', 'state', 'created_at'],
     order: [
       ['state', 'ASC'],
       ['name', 'ASC']
@@ -28,9 +29,25 @@ router.get('/', middleware.checkToken, (req, res) => {
   })
 })
 
+router.get('/by-id/:id', middleware.checkToken, (req, res) => {
+  User.findOne({
+    attributes: ['id', 'name', 'email', 'username', 'icon', 'created_at', 'country', 'bio', 'level'],
+    where: {
+      id: req.params.id
+    }
+  }).then(data => {
+    res.json(data)
+    log(req, LogType.SELECT_BY_ID, null, UI, null, '')
+  }).catch(err => {
+    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
+    log(req, LogType.SELECT_BY_ID_ATTEMPT, null, UI, null, '')
+    logger.error(err)
+  })
+})
+
 router.get('/:query', middleware.checkToken, (req, res) => {
   User.findAll({
-    attributes: ['id', 'name', 'email', 'username', 'icon', 'country', 'timezone', 'bio', 'level', 'state', 'created_at'],
+    attributes: ['id', 'name', 'username', 'email', 'state', 'created_at'],
     where: {
       [Op.or]: [
         {

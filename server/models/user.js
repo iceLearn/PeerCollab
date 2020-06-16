@@ -33,11 +33,11 @@ module.exports = db.sequelize.define(
     bio: {
       type: Sequelize.STRING
     },
-    state: {
-      type: Sequelize.STRING
-    },
     level: {
       type: Sequelize.INTEGER
+    },
+    state: {
+      type: Sequelize.STRING
     }
   },
   {
