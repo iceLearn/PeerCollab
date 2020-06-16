@@ -29,6 +29,22 @@ router.get('/', middleware.checkToken, (req, res) => {
   })
 })
 
+router.get('/by-id/:id', middleware.checkToken, (req, res) => {
+  User.findOne({
+    attributes: ['id', 'name', 'email', 'username', 'icon', 'created_at', 'country', 'bio', 'level'],
+    where: {
+      id: req.params.id
+    }
+  }).then(data => {
+    res.json(data)
+    log(req, LogType.SELECT_BY_ID, null, UI, null, '')
+  }).catch(err => {
+    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
+    log(req, LogType.SELECT_BY_ID_ATTEMPT, null, UI, null, '')
+    logger.error(err)
+  })
+})
+
 router.get('/:query', middleware.checkToken, (req, res) => {
   User.findAll({
     attributes: ['id', 'name', 'username', 'email', 'state', 'created_at'],

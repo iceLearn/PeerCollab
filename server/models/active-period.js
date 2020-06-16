@@ -9,12 +9,6 @@ module.exports = db.sequelize.define(
       primaryKey: true,
       autoIncrement: true
     },
-    start_time: {
-      type: Sequelize.DATE
-    },
-    end_time: {
-      type: Sequelize.DATE
-    },
     time: {
       type: Sequelize.INTEGER
     },

@@ -4,6 +4,7 @@ const cors = require('cors')
 const User = require('../models/user')
 const Community = require('../models/community')
 const Activity = require('../models/activity')
+const { addNotification } = require('../ctrl/notification-ctrl')
 const middleware = require('../middleware/auth-middleware')
 const { checkError, logger, ErrorType } = require('../util/error-utils')
 const { log, LogType } = require('../ctrl/user-logger')
@@ -14,22 +15,40 @@ const UI = 'ACTIVITY'
 
 Activity.hasOne(Community, { foreignKey: 'id', sourceKey: 'community_id' })
 Activity.hasOne(User, { foreignKey: 'id', sourceKey: 'user_id' })
-Activity.hasMany(Activity, { as: 'sub_activities', foreignKey: 'activity_ref_id', sourceKey: 'id' })
+Activity.hasOne(User, { as: 'sub_user', foreignKey: 'id', sourceKey: 'user_id' })
+Activity.hasMany(Activity, { as: 'sub_activities', foreignKey: 'id', sourceKey: 'activity_ref_id' })
 
 router.get('/by-community/:id/:offset', middleware.checkToken, (req, res) => {
   Activity.findAll({
     attributes: ['id', 'type', 'text', 'attachment', 'expression', 'created_at', 'updated_at',
-      'activity_ref_id'],
-    where: { 'community_id': req.params.id },
+      'activity_ref_id', 'user_id'],
+    where: {
+      'community_id': req.params.id,
+      'type': 'POST'
+    },
     order: [
-      ['updated_at', 'DESC']
+      ['id', 'DESC']
     ],
-    offset: req.params.offset,
+    offset: parseInt(req.params.offset),
     limit: 10,
     include: [
       {
-        attributes: ['id', 'username', 'name'],
+        attributes: ['id', 'username', 'name', 'icon'],
         model: User
+      },
+      {
+        model: Activity,
+        as: 'sub_activities',
+        on: {
+          item_id: db.sequelize.where(db.sequelize.col('activity.id'), '=', db.sequelize.col('sub_activities.activity_ref_id'))
+        },
+        required: false,
+        attributes: ['id', 'type', 'text', 'attachment', 'expression', 'created_at'],
+        include: [{
+          as: 'sub_user',
+          attributes: ['id', 'username', 'name', 'icon'],
+          model: User
+        }]
       }
     ]
   }).then(results => {
@@ -37,6 +56,7 @@ router.get('/by-community/:id/:offset', middleware.checkToken, (req, res) => {
     res.json(data)
     log(req, LogType.SELECT_ALL, null, UI, null, '')
   }).catch(err => {
+    console.log(err)
     res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
     logger.error(err)
     log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
@@ -86,7 +106,7 @@ router.get('/:id', middleware.checkToken, (req, res) => {
         model: Community
       },
       {
-        attributes: ['id', 'username', 'name'],
+        attributes: ['id', 'username', 'name', 'icon'],
         model: User
       },
       {
@@ -95,7 +115,12 @@ router.get('/:id', middleware.checkToken, (req, res) => {
         on: {
           item_id: db.sequelize.where(db.sequelize.col('activity.activity_ref_id'), '=', db.sequelize.col('sub_activities.id'))
         },
-        attributes: []
+        required: false,
+        attributes: ['id', 'type', 'text', 'attachment', 'expression', 'created_at'],
+        include: [{
+          attributes: ['id', 'username', 'name', 'icon'],
+          model: User
+        }]
       }
     ]
   }).then(data => {
@@ -108,9 +133,54 @@ router.get('/:id', middleware.checkToken, (req, res) => {
   })
 })
 
+function getActivity(postId) {
+  return new Promise((resolve, reject) => {
+    Activity.findOne({
+      attributes: ['user_id'],
+      where: { 'id': postId },
+      include: [
+        {
+          attributes: ['name'],
+          model: User
+        }
+      ]
+    }).then(data => {
+      resolve(data.dataValues)
+    }).catch(err => {
+      reject(err)
+    })
+  })
+}
+
 router.post('/', middleware.checkToken, (req, res) => {
   req.body.user_id = req.decoded.id
   Activity.create(req.body).then(results => {
+    switch (req.body.type) {
+      case 'POST':
+        break
+      case 'COMMENT':
+        getActivity(req.body.activity_ref_id).then(activity => {
+          if (req.body.user_id != activity.user_id) {
+            let text = activity.user.name + ' commented on your post'
+            let url = 'community/' + req.body.community_id
+            addNotification(text, url, activity.user_id)
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+        break
+      case 'EXPRESSION':
+        getActivity(req.body.activity_ref_id).then(activity => {
+          if (req.body.user_id != activity.user_id) {
+            let text = activity.user.name + ' liked your post'
+            let url = 'community/' + req.body.community_id
+            addNotification(text, url, activity.user_id)
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+        break
+    }
     res.json({ status: true, id: results.id })
     log(req, LogType.INSERT, results.id, UI, null, '')
   }).catch(err => {

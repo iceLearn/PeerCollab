@@ -5,6 +5,24 @@ import axios from './../ctrl/AxiosConf'
 
 class Nav extends Component {
 
+  constructor() {
+    super()
+    this.state = {
+      notifications: []
+    }
+    this.loadNotifications()
+  }
+
+  loadNotifications() {
+    axios.get('notifications/').then(res => {
+      this.setState({
+        notifications: res.data
+      })
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+
   clickLink = (url, e) => {
     e.preventDefault()
     this.props.history.push(url)
@@ -22,12 +40,31 @@ class Nav extends Component {
     window.location.reload()
   }
 
-  html = (classes) => (
+  formatDate(date) {
+    return date.substring(0, 19).replace('T', ' ')
+  }
+
+  clickNotification = (index, id, link) => e => {
+    this.props.history.push('/' + link)
+    axios.put('notifications/', {
+      id: id
+    }).then(res => {
+      let notifications = this.state.notifications
+      notifications.splice(index, 1)
+      this.setState({
+        notifications: notifications
+      })
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+
+  html = (formatDate, clickNotification) => (
     <div class="navbar-menu-wrapper d-flex align-items-center justify-content-end">
       <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
         <span class="ti-view-list"></span>
       </button>
-      <ul class="navbar-nav mr-lg-2">
+      {/* <ul class="navbar-nav mr-lg-2">
         <li class="nav-item nav-search d-none d-lg-block">
           <div class="input-group">
             <div class="input-group-prepend hover-cursor" id="navbar-search-icon">
@@ -38,9 +75,9 @@ class Nav extends Component {
             <input type="text" class="form-control" id="navbar-search-input" placeholder="Search now" aria-label="search" aria-describedby="search" />
           </div>
         </li>
-      </ul>
+      </ul> */}
       <ul class="navbar-nav navbar-nav-right">
-        <li class="nav-item dropdown mr-1">
+        {/* <li class="nav-item dropdown mr-1">
           <a class="nav-link count-indicator dropdown-toggle d-flex justify-content-center align-items-center" id="messageDropdown" href="#" data-toggle="dropdown">
             <i class="ti-email mx-0"></i>
           </a>
@@ -83,54 +120,31 @@ class Nav extends Component {
               </div>
             </a>
           </div>
-        </li>
+        </li> */}
         <li class="nav-item dropdown">
           <a class="nav-link count-indicator dropdown-toggle" id="notificationDropdown" href="#" data-toggle="dropdown">
             <i class="ti-bell mx-0"></i>
-            <span class="count"></span>
+            <span class="count" style={{ display: this.state.notifications.length > 0 ? '' : 'none' }}></span>
           </a>
           <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="notificationDropdown">
             <p class="mb-0 font-weight-normal float-left dropdown-header">Notifications</p>
-            <a class="dropdown-item">
-              <div class="item-thumbnail">
-                <div class="item-icon bg-success">
-                  <i class="ti-info-alt mx-0"></i>
-                </div>
-              </div>
-              <div class="item-content">
-                <h6 class="font-weight-normal">Application Error</h6>
-                <p class="font-weight-light small-text mb-0 text-muted">
-                  Just now
-          </p>
-              </div>
-            </a>
-
-            <a class="dropdown-item">
-              <div class="item-thumbnail">
-                <div class="item-icon bg-warning">
-                  <i class="ti-settings mx-0"></i>
-                </div>
-              </div>
-              <div class="item-content">
-                <h6 class="font-weight-normal">Settings</h6>
-                <p class="font-weight-light small-text mb-0 text-muted">
-                  Private message
-          </p>
-              </div>
-            </a>
-            <a class="dropdown-item">
-              <div class="item-thumbnail">
-                <div class="item-icon bg-info">
-                  <i class="ti-user mx-0"></i>
-                </div>
-              </div>
-              <div class="item-content">
-                <h6 class="font-weight-normal">New user registration</h6>
-                <p class="font-weight-light small-text mb-0 text-muted">
-                  2 days ago
-          </p>
-              </div>
-            </a>
+            {
+              this.state.notifications.map(function (val, index) {
+                return <a class="dropdown-item" key={index} onClick={clickNotification(index, val.id, val.url)}>
+                  <div class="item-thumbnail">
+                    <div class="item-icon bg-success">
+                      <i class="ti-info-alt mx-0"></i>
+                    </div>
+                  </div>
+                  <div class="item-content">
+                    <h6 class="font-weight-normal">{val.text}</h6>
+                    <p class="font-weight-light small-text mb-0 text-muted">
+                      {formatDate(val.created_at)}
+                    </p>
+                  </div>
+                </a>
+              })
+            }
           </div>
         </li>
         <li class="nav-item nav-profile dropdown">
@@ -146,14 +160,14 @@ class Nav extends Component {
               <i class="ti-user text-primary"></i>
         Profile
       </a>
-            <a class="dropdown-item">
+            {/* <a class="dropdown-item">
               <i class="ti-files text-primary"></i>
         Certificates
       </a>
             <a class="dropdown-item">
               <i class="ti-settings text-primary"></i>
         Settings
-      </a>
+      </a> */}
             <a class="dropdown-item" href="#" onClick={this.clickLogout}>
               <i class="ti-power-off text-primary"></i>
         Logout
@@ -167,7 +181,7 @@ class Nav extends Component {
     </div>
   )
   render() {
-    var html = this.html(this.props.classes)
+    var html = this.html(this.formatDate, this.clickNotification)
     return (
       html
     )

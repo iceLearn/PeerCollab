@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const Sequelize = require('sequelize')
 const cors = require('cors')
 const User = require('../models/user')
 const Course = require('../models/course')
@@ -9,7 +10,8 @@ const { log, LogType } = require('../ctrl/user-logger')
 const Message = require('../ctrl/alert-messages')
 router.use(cors())
 const UI = 'COURSE'
- 
+const Op = Sequelize.Op
+
 Course.hasOne(User, { foreignKey: 'id', sourceKey: 'user_id' })
 
 router.get('/', middleware.checkToken, (req, res) => {
@@ -21,6 +23,31 @@ router.get('/', middleware.checkToken, (req, res) => {
         model: User
       }
     ]
+  }).then(results => {
+    const data = results.map((node) => node.get({ plain: true }))
+    res.json(data)
+    log(req, LogType.SELECT_ALL, null, UI, null, '')
+  }).catch(err => {
+    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
+    logger.error(err)
+    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
+  })
+})
+
+router.get('/search/:query', middleware.checkToken, (req, res) => {
+  Course.findAll({
+    attributes: ['id', 'name', 'description', 'icon', 'created_at'],
+    include: [
+      {
+        attributes: ['id', 'username', 'name'],
+        model: User
+      }
+    ],
+    where: {
+      name: {
+        [Op.like]: '%' + req.params.query + '%'
+      }
+    }
   }).then(results => {
     const data = results.map((node) => node.get({ plain: true }))
     res.json(data)
@@ -44,6 +71,20 @@ router.get('/by-user', middleware.checkToken, (req, res) => {
     res.json(data)
     log(req, LogType.SELECT_ALL, null, UI, null, '')
   }).catch(err => {
+    res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
+    logger.error(err)
+    log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')
+  })
+})
+
+router.get('/count', middleware.checkToken, (req, res) => {
+  Course.count({
+    col: 'course.id'
+  }).then(data => {
+    res.json(data)
+    log(req, LogType.SELECT_ALL, null, UI, null, '')
+  }).catch(err => {
+    console.log(err)
     res.json({ status: false, message: Message.MSG_UNKNOWN_ERROR })
     logger.error(err)
     log(req, LogType.SELECT_ALL_ATTEMPT, null, UI, null, '')

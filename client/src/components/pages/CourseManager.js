@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { userInfo } from '../../info'
 import axios from '../../ctrl/AxiosConf'
+import {shortenDescription} from '../../ctrl/Validator'
 import Texts from '../../Texts'
 import Notifier, { openSnackbar } from '../small-components/Notifier'
 
@@ -99,11 +100,11 @@ class CourseManager extends Component {
             this.state.data.map(function (val, index) {
               return <div class="col-md-3 grid-margin stretch-card" key={index}>
                 <div class="card">
-                  <div class="card-body" onClick={edit(index)}>
+                  <div class="card-body">
                     <h3 class="card-title text-md-center">{val.name}</h3>
                     <div class="d-flex flex-wrap justify-content-between justify-content-md-center justify-content-xl-between align-items-center">
                       <p class="mb-0 mb-md-2 mb-xl-0 order-md-1 order-xl-0">
-                        {val.description}
+                        {shortenDescription(val.description)}
                       </p>
                     </div>
                     <div class="mt-4">
@@ -114,6 +115,9 @@ class CourseManager extends Component {
                         <i class="ti-comment-alt icon-md text-muted mb-0 mb-md-3 mb-xl-0"></i><p>89</p>
                       </div> */}
                     </div>
+                  </div>
+                  <div class="card-body text-md-center">
+                    <button type="submit" class="btn btn-secondary" onClick={edit(index)}>Edit</button>
                   </div>
                 </div>
               </div>

@@ -18,19 +18,28 @@ class Nav extends Component {
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" data-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-            <i class="ti-user menu-icon"></i>
-            <span class="menu-title">User Pages</span>
-            <i class="menu-arrow"></i>
+          <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/course-manager')}>
+            <i class="ti-file menu-icon"></i>
+            <span class="menu-title">Course Manager</span>
           </a>
-          <div class="collapse" id="auth">
-            <ul class="nav flex-column sub-menu">
-              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/course-manager')}> Course Manager </a></li>
-              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/community-manager')}> Community Manager </a></li>
-              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/community-browser')}> Browse Communities </a></li>
-              <li class="nav-item"> <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/my-communities')}> My Communities </a></li>
-            </ul>
-          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/community-manager')}>
+            <i class="ti-files menu-icon"></i>
+            <span class="menu-title">Community Manager </span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/community-browser')}>
+            <i class="ti-search menu-icon"></i>
+            <span class="menu-title">Browse Communities</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href='#' onClick={this.clickLink.bind(this, '/my-communities')}>
+            <i class="ti-pin-alt menu-icon"></i>
+            <span class="menu-title">My Communities</span>
+          </a>
         </li>
       </ul>
     </nav>

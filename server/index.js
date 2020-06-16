@@ -29,6 +29,10 @@ var enrollments = require('./routes/enrollments')
 app.use('/enrollments', enrollments)
 var activities = require('./routes/activities')
 app.use('/activities', activities)
+var activityPeriods = require('./routes/active-periods')
+app.use('/active-periods', activityPeriods)
+var notifications = require('./routes/notifications')
+app.use('/notifications', notifications)
 
 app.use(connectHistoryApiFallback({
   verbose: false

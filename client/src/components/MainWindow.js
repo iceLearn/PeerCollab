@@ -14,6 +14,9 @@ import Courses from './pages/Courses'
 import CourseManager from './pages/CourseManager'
 import CommunityManager from './pages/CommunityManager'
 import MyCommunities from './pages/MyCommunities'
+import Community from './pages/Community'
+import User from './pages/User'
+import { login } from '../ctrl/UserFunctions'
 
 class MainWindow extends React.Component {
 
@@ -42,8 +45,8 @@ class MainWindow extends React.Component {
         <div class="container-scroller">
           <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
             <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
-              <a class="navbar-brand brand-logo mr-5" href="index.html"><img src="images/logo.svg" class="mr-2" alt="logo" /></a>
-              <a class="navbar-brand brand-logo-mini" href="index.html"><img src="images/logo-mini.svg" alt="logo" /></a>
+              <a class="navbar-brand brand-logo mr-5" href="/"><img src="images/logo.svg" class="mr-2" alt="logo" /></a>
+              <a class="navbar-brand brand-logo-mini" href="/"><img src="images/logo-mini.svg" alt="logo" /></a>
             </div>
             <Nav />
           </nav>
@@ -56,6 +59,8 @@ class MainWindow extends React.Component {
               <Route exact path='/community-manager' component={CommunityManager} />
               <Route exact path='/community-browser' component={Courses} />
               <Route exact path='/my-communities' component={MyCommunities} />
+              <Route exact path='/community/:id' component={Community} />
+              <Route exact path='/user/:id' component={User} />
               {/* <Route exact path='/' component={Landing} />
               <Route exact path='/' component={Landing} />
               <Route exact path='/' component={Landing} />
@@ -83,6 +88,24 @@ class MainWindow extends React.Component {
     if (localStorage.usertoken) {
       try {
         const decoded = jwtDecode(localStorage.usertoken)
+        const user = {
+          username: decoded.username,
+          password: decoded.password
+        }
+        // console.log(user)
+        // login(user).then(res => {
+        //   if (res.error || res.warning) {
+        //     console.log(res.error)
+        //     console.log(res.warning)
+        //     localStorage.removeItem('usertoken')
+        //     axios.post('users/logout').then(res => {
+        //     }).catch(err => {
+        //       console.log(err)
+        //     })
+        //     // window.location.reload()
+        //   } else {
+        //   }
+        // })
         html = this.Auth(this.props.classes)
       } catch (error) {
         console.log(error)

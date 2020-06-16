@@ -1,33 +1,7 @@
 
-export const validateQty = (val, unit) => {
-  val = val.replace('-', '')
-  if (val == '' || isNaN(val)) {
-    val = ''
-  } else {
-    if (unit == 'NOS') {
-      if (val >= 100000) {
-        val = val / 10
-      }
-      val = Math.floor(val)
-    } else {
-      if (val >= 100000) {
-        val = val / 10
-      }
-      val = Math.floor(val * 1000) / 1000
-    }
+export const shortenDescription = (text) => {
+  if (text && text.length > 100) {
+    text = text.substring(0, 97) + '...'
   }
-  return val
-}
-
-export const validatePrice = (val) => {
-  val = val.replace('-', '')
-  if (val == '' || isNaN(val)) {
-    val = ''
-  } else {
-    if (val >= 100000) {
-      val = val / 10
-    }
-    val = Math.floor(val * 100) / 100
-  }
-  return val
+  return text
 }
