@@ -19,7 +19,7 @@
     "connect-history-api-fallback": "1.6.0",
     "cors": "2.8.4",
     "dotenv": "^8.2.0",
-    "express": "4.16.3",
+    "express": "4.17.3",
     "jsonwebtoken": "7.4.2",
     "log4js": "4.1.0",
     "multer": "1.4.1",
